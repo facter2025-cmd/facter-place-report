@@ -359,7 +359,7 @@ window.__SAMPLE=sample;
 let mode="login";const $g=id=>document.getElementById(id);
 function setMode(m){mode=m;$g("gMsg").textContent="";$g("gMsg").className="msg";
   $g("gTitle").textContent=m==="login"?"플레이스 리포트":"계정 만들기";
-  $g("gSub").textContent=m==="login"?"팀 계정으로 로그인하세요.":"팀원으로 등록된 이메일로 만들어 주세요. 가입 후 받은 메일의 확인 링크를 누르면 로그인할 수 있어요.";
+  $g("gSub").textContent=m==="login"?"팀 계정으로 로그인하세요.":"팀원으로 등록된 회사 이메일과 사용할 비밀번호(8자 이상)를 넣으면 바로 들어가요.";
   $g("gBtnTx").textContent=m==="login"?"로그인하기":"계정 만들기";$g("gAlt").textContent=m==="login"?"처음이신가요?":"이미 계정이 있나요?";
   $g("gMode").textContent=m==="login"?"계정 만들기":"로그인";$g("gPw").autocomplete=m==="login"?"current-password":"new-password"}
 $g("gMode").onclick=()=>setMode(mode==="login"?"signup":"login");
@@ -383,11 +383,12 @@ $g("gform").addEventListener("submit",async e=>{
   try{localStorage.setItem("pr.keep",$g("gKeep").checked?"1":"0")}catch(_){}
   btn.disabled=true;
   try{
-    if(mode==="signup"){const {error}=await SB.auth.signUp({email,password:pw,options:{emailRedirectTo:location.origin+location.pathname}});
-      if(error)throw error;msg.className="msg ok";msg.textContent="확인 메일을 보냈어요. 메일의 링크를 누른 뒤 여기서 로그인하세요.";setMode("login");msg.className="msg ok";msg.textContent="확인 메일을 보냈어요. 메일의 링크를 누른 뒤 로그인하세요."}
+    if(mode==="signup"){const {data,error}=await SB.auth.signUp({email,password:pw,options:{emailRedirectTo:location.origin+location.pathname}});
+      if(error)throw error;if(data.session){await enter(data.session);return}
+      setMode("login");msg.className="msg ok";msg.textContent="계정을 만들었어요. 같은 이메일과 비밀번호로 로그인하세요."}
     else{const {data,error}=await SB.auth.signInWithPassword({email,password:pw});if(error)throw error;await enter(data.session)}
   }catch(err){const m=String(err?.message||"");
-    msg.textContent=/Invalid login/i.test(m)?"이메일 또는 비밀번호가 맞지 않아요.":/not confirmed/i.test(m)?"메일 인증이 아직이에요. 받은 메일의 확인 링크를 눌러 주세요.":/already registered/i.test(m)?"이미 가입된 이메일이에요. 로그인해 주세요.":/rate limit/i.test(m)?"요청이 많아요. 잠시 뒤 다시 시도해 주세요.":"로그인하지 못했어요. 다시 시도해 주세요."}
+    msg.textContent=/Invalid login/i.test(m)?"이메일 또는 비밀번호가 맞지 않아요.":/not confirmed/i.test(m)?"메일 인증이 아직이에요. 받은 메일의 확인 링크를 눌러 주세요.":/already registered/i.test(m)?"이미 가입된 이메일이에요. 로그인해 주세요.":/등록되지 않은|Database error/i.test(m)?"팀원으로 등록되지 않은 이메일이에요. 관리자에게 등록을 요청해 주세요.":/rate limit/i.test(m)?"요청이 많아요. 잠시 뒤 다시 시도해 주세요.":"로그인하지 못했어요. 다시 시도해 주세요."}
   finally{btn.disabled=false}
 });
 SB.auth.onAuthStateChange((ev,session)=>{if(ev==="SIGNED_IN"&&!started&&session&&location.hash.includes("access_token"))enter(session)});
