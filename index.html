@@ -522,16 +522,10 @@ SB.auth.onAuthStateChange((ev,session)=>{if(ev==="SIGNED_IN"&&!started&&session&
       <!-- 데이터 넣기 -->
       <section class="view" data-view="data" hidden>
         <div class="grid2e">
-          <section class="card" id="uploadCard" aria-labelledby="upH">
-            <div class="card-h"><div class="tt"><h2 id="upH">스마트플레이스 캡처</h2><p>통계(월간)·쿠폰함 화면 캡처. 여러 장을 한 번에 넣어도 돼요. 읽은 값은 저장 전에 확인하고 고칠 수 있어요.</p></div></div>
-            <div class="drop" id="drop" tabindex="0" aria-label="이미지 붙여넣기 영역 — 클릭한 뒤 Ctrl+V">
-              <div class="ic"><svg viewBox="0 0 20 20"><rect x="2.5" y="3.5" width="15" height="13" rx="2.5"/><circle cx="7" cy="8" r="1.5"/><path d="M3 15l4.5-4.5 3 3L13 11l4 4"/></svg></div>
-              <div class="tx"><b>이 상자를 클릭한 뒤 Ctrl+V(⌘+V), 또는 끌어다 놓기</b><span id="dropHint">PNG·JPG</span></div>
-              <label class="btn btn-ink" for="file">이미지 선택</label>
-              <input type="file" id="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>
-            </div>
-            <div class="thumbs" id="thumbs"></div>
-            <div class="status" id="status" hidden></div>
+          <section class="card" aria-labelledby="upH">
+            <div class="card-h"><div class="tt"><h2 id="upH">스마트플레이스 캡처</h2><p>통계·플레이스·쿠폰 화면 캡처는 <b style="color:var(--fg)">팩터 Claude 채팅방</b>으로 보내 주세요. 읽어서 여기로 바로 넣어 드려요.</p></div></div>
+            <div class="note">보낼 때 함께 적어 주세요: 매장 이름 · 어느 달인지. 리포트 탭과 플레이스 탭을 같이 보내면 유입 키워드·성별·연령까지 들어가요.</div>
+            <div id="drop" hidden></div><input type="file" id="file" hidden><div id="thumbs" hidden></div><div id="status" hidden></div><span id="dropHint" hidden></span>
           </section>
           <section class="card" aria-labelledby="csvH">
             <div class="card-h"><div class="tt"><h2 id="csvH">네이버 광고 보고서 (CSV)</h2><p>검색광고 시스템 › 보고서에서 <b>일별</b>로 받은 CSV. 파워링크·플레이스광고·지역소상공인광고 비용이 달별로 정확히 들어가요.</p></div></div>
@@ -1218,6 +1212,7 @@ drop.addEventListener("click",e=>{if(!e.target.closest("label,input"))drop.focus
 const isImg=f=>f&&(/^image\//.test(f.type)||/\.(png|jpe?g|webp|gif)$/i.test(f.name||""));
 function dataUrlToFile(u,i){const[h,b]=u.split(",");const type=(h.match(/data:([^;]+)/)||[])[1]||"image/png";const bin=atob(b);const arr=new Uint8Array(bin.length);for(let j=0;j<bin.length;j++)arr[j]=bin.charCodeAt(j);return new File([arr],`붙여넣은-이미지-${i+1}.png`,{type})}
 document.addEventListener("paste",e=>{
+  return;
   const cd=e.clipboardData;if(!cd)return;const el=e.target;const inField=el&&el.closest&&el.closest("input,textarea,[contenteditable]");
   let out=[];for(const it of cd.items||[]){if(it.kind==="file"){const f=it.getAsFile();if(isImg(f))out.push(f)}}
   if(!out.length)out=[...(cd.files||[])].filter(isImg);
